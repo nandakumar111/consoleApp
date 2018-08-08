@@ -142,11 +142,11 @@ void login(struct bankCustomer** customer){
 					printf("\nMinimum balance is %d",minimum_balance);
 					break;
 				}else{
-					customers->balance -= withdraw;
 					struct transaction* newTransaction = (struct transaction*)malloc(sizeof(struct transaction));
 					newTransaction->custId = customers->custId;
 					newTransaction->prevBalance = customers->balance;
 					newTransaction->deposit =0;
+					customers->balance -= withdraw;
 					newTransaction->currentBalance = customers->balance;
 					newTransaction->withdraw = withdraw;
 					newTransaction->next = NULL;
@@ -164,11 +164,11 @@ void login(struct bankCustomer** customer){
 				long deposit;
 				printf("\nEnter deposit money : ");
 				scanf("%ld",&deposit);
-				customers->balance += deposit;
 				struct transaction* newTransaction = (struct transaction*)malloc(sizeof(struct transaction));
 				newTransaction->custId = customers->custId;
 				newTransaction->prevBalance = customers->balance;
 				newTransaction->deposit =deposit;
+				customers->balance += deposit;
 				newTransaction->currentBalance = customers->balance;
 				newTransaction->withdraw = 0;
 				newTransaction->next = NULL;
