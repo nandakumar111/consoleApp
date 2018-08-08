@@ -181,7 +181,57 @@ void login(struct bankCustomer** customer){
 					oldTarnsaction->next = newTransaction;
 				}
 				break;
-			case 3:
+			case 3: ;
+				int transferId;
+				long transferMoney;
+				struct bankCustomer* checkCustomers = (*customer);
+				printf("\n\t***** Money Transfer *****\n");
+				printf("\nEnter transfer customer id : ");
+				scanf("%d",&transferId);
+				while(checkCustomers!=NULL){
+					if(checkCustomers->custId == transferId && checkCustomers->custId != customers->custId)
+						break;
+					checkCustomers = checkCustomers->next;
+				}
+				if(checkCustomers == NULL){
+					printf("\n\t***** Customer not found *****\n");
+				}else{
+					printf("\nEnter transfer money : ");
+					scanf("%ld",&transferMoney);
+					struct transaction* newTransaction = (struct transaction*)malloc(sizeof(struct transaction));
+					newTransaction->custId = customers->custId;
+					newTransaction->prevBalance = customers->balance;
+					newTransaction->deposit =0;
+					customers->balance -= transferMoney;
+					newTransaction->currentBalance = customers->balance;
+					newTransaction->withdraw = transferMoney;
+					newTransaction->next = NULL;
+					if(customers->customerTransaction == NULL)
+						customers->customerTransaction = newTransaction;
+					else{
+						struct transaction* oldTarnsaction = customers->customerTransaction;
+						while(oldTarnsaction->next != NULL)
+							oldTarnsaction = oldTarnsaction->next;
+						oldTarnsaction->next = newTransaction;
+					}
+					//account transfer
+					struct transaction* newAccountTransaction = (struct transaction*)malloc(sizeof(struct transaction));
+					newAccountTransaction->custId = checkCustomers->custId;
+					newAccountTransaction->prevBalance = checkCustomers->balance;
+					newAccountTransaction->deposit =transferMoney;
+					checkCustomers->balance += transferMoney;
+					newAccountTransaction->currentBalance = checkCustomers->balance;
+					newAccountTransaction->withdraw = 0;
+					newAccountTransaction->next = NULL;
+					if(checkCustomers->customerTransaction == NULL)
+						checkCustomers->customerTransaction = newAccountTransaction;
+					else{
+						struct transaction* oldAccountTarnsaction = checkCustomers->customerTransaction;
+						while(oldAccountTarnsaction->next != NULL)
+							oldAccountTarnsaction = oldAccountTarnsaction->next;
+						oldAccountTarnsaction->next = newAccountTransaction;
+					}
+				}				
 				break;
 			case 4: ;
 				struct transaction* custTarnsaction = customers->customerTransaction;
@@ -191,11 +241,41 @@ void login(struct bankCustomer** customer){
 					printf("\nRecord Not Found..!!\n");	
 				}else{
 					int i=1;
-					printf("\n\tNo.\tCurrent Balance\tDeposit\tWithdraw\tPrev Balance\n");
+					printf("\n\tNo.\tC.Balance\tDeposit\tWithdraw\tP.Balance\n");
 					while(custTarnsaction != NULL){
 						printf("\n\t%d\t%ld\t%ld\t%ld\t%ld",i,custTarnsaction->currentBalance,custTarnsaction->deposit,custTarnsaction->withdraw,custTarnsaction->prevBalance);
 						i++;
 						custTarnsaction = custTarnsaction->next;
+					}
+				}
+				int trnF =1;
+				while(trnF){
+					int trnChc;
+					printf("\n\t**** Transaction History ****\n");
+					printf("\n1.Expert Transaction History\n2.Exit\nEnter your choice : ");
+					scanf("%d",&trnChc);
+					switch(trnChc){
+						case 1: ;
+							struct transaction* custTarns = customers->customerTransaction;
+							FILE* transFile = fopen("transaction.txt","w");
+							fprintf(transFile,"\n\t**** Transaction History ****\n");
+							fprintf(transFile,"\nName : %s\n",customers->name);
+							if(custTarns == NULL){
+								fprintf(transFile,"\nRecord Not Found..!!\n");	
+							}else{
+								int i=1;
+								fprintf(transFile,"\n\tNo.\tC.Balance\tDeposit\tWithdraw\tP.Balance\n");
+								while(custTarns != NULL){
+									fprintf(transFile,"\n\t%d\t%ld\t%ld\t%ld\t%ld",i,custTarns->currentBalance,custTarns->deposit,custTarns->withdraw,custTarns->prevBalance);
+									i++;
+									custTarns = custTarns->next;
+								}
+							}
+							fclose(transFile);	
+							break;
+						case 2:
+							trnF = 0;
+							break;
 					}
 				}
 				break;
