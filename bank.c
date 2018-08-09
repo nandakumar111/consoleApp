@@ -35,6 +35,7 @@ char encrptionChar(char key){
 	}else
 		return key+encryptionkey;
 }
+
 void addCustomer(struct bankCustomer** customer){
 	char cPswd[20],i;
 	struct bankCustomer* newCustomer = (struct bankCustomer*)malloc(sizeof(struct bankCustomer));
@@ -140,7 +141,6 @@ void login(struct bankCustomer** customer){
 				scanf("%ld",&withdraw);
 				if(customers->balance-withdraw < minimum_balance){
 					printf("\nMinimum balance is %d",minimum_balance);
-					break;
 				}else{
 					struct transaction* newTransaction = (struct transaction*)malloc(sizeof(struct transaction));
 					newTransaction->custId = customers->custId;
@@ -198,38 +198,42 @@ void login(struct bankCustomer** customer){
 				}else{
 					printf("\nEnter transfer money : ");
 					scanf("%ld",&transferMoney);
-					struct transaction* newTransaction = (struct transaction*)malloc(sizeof(struct transaction));
-					newTransaction->custId = customers->custId;
-					newTransaction->prevBalance = customers->balance;
-					newTransaction->deposit =0;
-					customers->balance -= transferMoney;
-					newTransaction->currentBalance = customers->balance;
-					newTransaction->withdraw = transferMoney;
-					newTransaction->next = NULL;
-					if(customers->customerTransaction == NULL)
-						customers->customerTransaction = newTransaction;
-					else{
-						struct transaction* oldTarnsaction = customers->customerTransaction;
-						while(oldTarnsaction->next != NULL)
-							oldTarnsaction = oldTarnsaction->next;
-						oldTarnsaction->next = newTransaction;
-					}
-					//account transfer
-					struct transaction* newAccountTransaction = (struct transaction*)malloc(sizeof(struct transaction));
-					newAccountTransaction->custId = checkCustomers->custId;
-					newAccountTransaction->prevBalance = checkCustomers->balance;
-					newAccountTransaction->deposit =transferMoney;
-					checkCustomers->balance += transferMoney;
-					newAccountTransaction->currentBalance = checkCustomers->balance;
-					newAccountTransaction->withdraw = 0;
-					newAccountTransaction->next = NULL;
-					if(checkCustomers->customerTransaction == NULL)
-						checkCustomers->customerTransaction = newAccountTransaction;
-					else{
-						struct transaction* oldAccountTarnsaction = checkCustomers->customerTransaction;
-						while(oldAccountTarnsaction->next != NULL)
-							oldAccountTarnsaction = oldAccountTarnsaction->next;
-						oldAccountTarnsaction->next = newAccountTransaction;
+					if(customers->balance-transferMoney < minimum_balance){
+						printf("\nMinimum balance is %d",minimum_balance);
+					}else{
+						struct transaction* newTransaction = (struct transaction*)malloc(sizeof(struct transaction));
+						newTransaction->custId = customers->custId;
+						newTransaction->prevBalance = customers->balance;
+						newTransaction->deposit =0;
+						customers->balance -= transferMoney;
+						newTransaction->currentBalance = customers->balance;
+						newTransaction->withdraw = transferMoney;
+						newTransaction->next = NULL;
+						if(customers->customerTransaction == NULL)
+							customers->customerTransaction = newTransaction;
+						else{
+							struct transaction* oldTarnsaction = customers->customerTransaction;
+							while(oldTarnsaction->next != NULL)
+								oldTarnsaction = oldTarnsaction->next;
+							oldTarnsaction->next = newTransaction;
+						}
+						//account transfer
+						struct transaction* newAccountTransaction = (struct transaction*)malloc(sizeof(struct transaction));
+						newAccountTransaction->custId = checkCustomers->custId;
+						newAccountTransaction->prevBalance = checkCustomers->balance;
+						newAccountTransaction->deposit =transferMoney;
+						checkCustomers->balance += transferMoney;
+						newAccountTransaction->currentBalance = checkCustomers->balance;
+						newAccountTransaction->withdraw = 0;
+						newAccountTransaction->next = NULL;
+						if(checkCustomers->customerTransaction == NULL)
+							checkCustomers->customerTransaction = newAccountTransaction;
+						else{
+							struct transaction* oldAccountTarnsaction = checkCustomers->customerTransaction;
+							while(oldAccountTarnsaction->next != NULL)
+								oldAccountTarnsaction = oldAccountTarnsaction->next;
+							oldAccountTarnsaction->next = newAccountTransaction;
+						}
 					}
 				}				
 				break;
