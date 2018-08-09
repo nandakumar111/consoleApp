@@ -13,6 +13,7 @@ struct bankCustomer{
 	long balance;
 	struct bankCustomer* next;
 	struct transaction* customerTransaction;
+	struct password* customerPassword;
 };
 
 struct transaction{
@@ -22,6 +23,13 @@ struct transaction{
 	long deposit;
 	long withdraw;
 	struct transaction* next;
+};
+
+struct password{
+	int custId;
+	char currentPassword[20];
+	char prevPassword[20];
+	struct password* next;
 };
 
 char encrptionChar(char key){
@@ -43,6 +51,7 @@ void addCustomer(struct bankCustomer** customer){
 	newCustomer->balance = default_balance;
 	newCustomer->next = NULL;
 	newCustomer->customerTransaction = NULL;
+	newCustomer->customerPassword = NULL;
 	printf("\n***** Customer Form *****\n");
 	printf("\nEnter name : ");
 	scanf("%s",newCustomer->name);
@@ -150,14 +159,11 @@ void login(struct bankCustomer** customer){
 					newTransaction->currentBalance = customers->balance;
 					newTransaction->withdraw = withdraw;
 					newTransaction->next = NULL;
-					if(customers->customerTransaction == NULL)
-						customers->customerTransaction = newTransaction;
-					else{
+					if(customers->customerTransaction != NULL){
 						struct transaction* oldTarnsaction = customers->customerTransaction;
-						while(oldTarnsaction->next != NULL)
-							oldTarnsaction = oldTarnsaction->next;
-						oldTarnsaction->next = newTransaction;
+						newTransaction->next = oldTarnsaction;
 					}
+					customers->customerTransaction = newTransaction;
 				}
 				break;
 			case 2: ;
@@ -172,14 +178,11 @@ void login(struct bankCustomer** customer){
 				newTransaction->currentBalance = customers->balance;
 				newTransaction->withdraw = 0;
 				newTransaction->next = NULL;
-				if(customers->customerTransaction == NULL)
-					customers->customerTransaction = newTransaction;
-				else{
-					struct transaction* oldTarnsaction = customers->customerTransaction;
-					while(oldTarnsaction->next != NULL)
-						oldTarnsaction = oldTarnsaction->next;
-					oldTarnsaction->next = newTransaction;
-				}
+				if(customers->customerTransaction != NULL){
+						struct transaction* oldTarnsaction = customers->customerTransaction;
+						newTransaction->next = oldTarnsaction;
+					}
+				customers->customerTransaction = newTransaction;
 				break;
 			case 3: ;
 				int transferId;
@@ -209,14 +212,11 @@ void login(struct bankCustomer** customer){
 						newTransaction->currentBalance = customers->balance;
 						newTransaction->withdraw = transferMoney;
 						newTransaction->next = NULL;
-						if(customers->customerTransaction == NULL)
-							customers->customerTransaction = newTransaction;
-						else{
+						if(customers->customerTransaction != NULL){
 							struct transaction* oldTarnsaction = customers->customerTransaction;
-							while(oldTarnsaction->next != NULL)
-								oldTarnsaction = oldTarnsaction->next;
-							oldTarnsaction->next = newTransaction;
+							newTransaction->next = oldTarnsaction;
 						}
+						customers->customerTransaction = newTransaction;
 						//account transfer
 						struct transaction* newAccountTransaction = (struct transaction*)malloc(sizeof(struct transaction));
 						newAccountTransaction->custId = checkCustomers->custId;
@@ -226,14 +226,11 @@ void login(struct bankCustomer** customer){
 						newAccountTransaction->currentBalance = checkCustomers->balance;
 						newAccountTransaction->withdraw = 0;
 						newAccountTransaction->next = NULL;
-						if(checkCustomers->customerTransaction == NULL)
-							checkCustomers->customerTransaction = newAccountTransaction;
-						else{
+						if(checkCustomers->customerTransaction != NULL){
 							struct transaction* oldAccountTarnsaction = checkCustomers->customerTransaction;
-							while(oldAccountTarnsaction->next != NULL)
-								oldAccountTarnsaction = oldAccountTarnsaction->next;
-							oldAccountTarnsaction->next = newAccountTransaction;
+							newAccountTransaction->next = oldAccountTarnsaction;
 						}
+						checkCustomers->customerTransaction = newAccountTransaction;
 					}
 				}				
 				break;
@@ -283,9 +280,55 @@ void login(struct bankCustomer** customer){
 					}
 				}
 				break;
-			case 5:
+			case 5: ;
+				char currentPswd[20];
+				printf("\n\t***** Password Reset *****\n");
+				printf("\nEnter current password : ");
+				scanf("%s",currentPswd);
+				for(i=0;currentPswd[i]!='\0';i++)
+					currentPswd[i] = encrptionChar(currentPswd[i]);
+				if(strcmp(customers->password,currentPswd) != 0){
+					printf("\n\t***** Current password not match..!! ******\n");
+				}else{
+					char newPswd[20],conPswd[20];
+					printf("\nEnter Password : ");
+					scanf("%s",newPswd);
+					printf("\nEnter Confirm Password : ");
+					scanf("%s",conPswd);
+					if(strcmp(newPswd,conPswd) != 0){
+						printf("\n*** Password not match..!! ***\n");
+					}else{
+						struct password* passwordChange = (struct password*)malloc(sizeof(struct password));
+						passwordChange->custId = customers->custId;
+						strcpy(passwordChange->prevPassword,customers->password);
+						for(i=0;newPswd[i]!='\0';i++)
+							newPswd[i] = encrptionChar(newPswd[i]);
+						strcpy(customers->password,newPswd);
+						strcpy(passwordChange->currentPassword,customers->password);
+						passwordChange->next = NULL;
+						if(customers->customerPassword != NULL){
+							struct password* tempPswd = customers->customerPassword;
+							passwordChange->next = tempPswd;
+						}
+						customers->customerPassword = passwordChange;
+					}
+				}
 				break;
-			case 6:
+			case 6: ;
+				struct password* custPass = customers->customerPassword;
+				printf("\n\t***** Password change history *****\n");
+				if(custPass == NULL)
+					printf("\nNo records found..!!\n");
+				else{
+					int i=1;
+					printf("\nName : %s",customers->name);
+					printf("\n\tNo.\tCustId\tCurrentPswd\tPrePswd\n");
+					while(custPass != NULL){
+						printf("\n\t%d\t%d\t%s\t%s",i,custPass->custId,custPass->currentPassword,custPass->prevPassword);
+						custPass = custPass->next;
+						i++;
+					}
+				}
 				break;
 			case 7:
 				f=0;
